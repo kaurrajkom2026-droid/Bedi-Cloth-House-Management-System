@@ -209,10 +209,8 @@ st.sidebar.markdown("---")
 
 st.sidebar.subheader("Database Connection")
 
-password = st.sidebar.text_input(
-    "MySQL Root Password",
-    type="password"
-)
+db_config = st.secrets["mysql"]
+password = db_config["password"]
 
 
 # Main heading
@@ -238,11 +236,13 @@ if password:
 
     try:
         connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password=password,
-            database="bedi_cloth_house"
-        )
+        host=db_config["host"],
+        port=int(db_config["port"]),
+        user=db_config["user"],
+        password=db_config["password"],
+        database=db_config["database"],
+        ssl_disabled=False
+)
 
         cursor = connection.cursor()
 
