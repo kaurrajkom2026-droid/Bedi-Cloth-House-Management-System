@@ -309,7 +309,34 @@ if password:
 
         cursor = connection.cursor()
 
-        st.sidebar.success("Database Connected Successfully!")
+       st.sidebar.markdown("""
+<div style="
+    background-color: #DDF5DF;
+    color: #176B2C;
+    padding: 16px 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    border: 1px solid #A5D6A7;
+">
+    <span style="
+        background-color: #16852D;
+        color: white;
+        border-radius: 50%;
+        width: 27px;
+        height: 27px;
+        min-width: 27px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    ">✓</span>
+    <span>Database Connected<br>Successfully!</span>
+</div>
+""", unsafe_allow_html=True)
 
         # PART 2 CONTINUES HERE
                 # ==========================================
