@@ -309,7 +309,7 @@ if password:
 
         cursor = connection.cursor()
 
-       st.sidebar.markdown("""
+        st.sidebar.markdown("""
 <div style="
     background-color: #DDF5DF;
     color: #176B2C;
