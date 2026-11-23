@@ -15,67 +15,76 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM DESIGN
+# CUSTOM DESIGN - BEDI CLOTH HOUSE
 # ==========================================
 
 st.markdown("""
 <style>
 
+/* MAIN BACKGROUND */
 .stApp {
-    background-color: #F8F1E7;
+    background: #F8F1E7 !important;
 }
 
+[data-testid="stAppViewContainer"] {
+    background: #F8F1E7 !important;
+}
+
+.block-container {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+
+/* MAIN HEADINGS */
 h1, h2, h3 {
     color: #800020 !important;
-    font-weight: 700;
-}
-
-p, label {
-    color: #4A2630;
-}
-
-[data-testid="stMetric"] {
-    background: linear-gradient(135deg, #800020, #4A0012);
-    padding: 22px 18px;
-    border-radius: 16px;
-    border: 1px solid #D4AF37;
-    box-shadow: 0 5px 12px rgba(70, 0, 20, 0.18);
-    text-align: center;
-}
-
-[data-testid="stMetricLabel"],
-[data-testid="stMetricLabel"] *,
-[data-testid="stMetricLabel"] p {
-    color: #FFF1D0 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-[data-testid="stMetricValue"],
-[data-testid="stMetricValue"] *,
-[data-testid="stMetricValue"] div {
-    color: #FFD700 !important;
-    font-size: 30px !important;
     font-weight: 800 !important;
 }
 
-[data-testid="stMetricDelta"],
-[data-testid="stMetricDelta"] * {
-    color: #FFFFFF !important;
+h1 {
+    font-size: 42px !important;
 }
 
+h2 {
+    font-size: 30px !important;
+}
+
+h3 {
+    font-size: 22px !important;
+}
+
+p, label, span {
+    font-family: Arial, sans-serif;
+}
+
+/* SIDEBAR */
 [data-testid="stSidebar"] {
-    background-color: #4A0012;
+    background: linear-gradient(180deg, #800020, #4A0012) !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
 }
 
+[data-testid="stSidebar"] > div:first-child {
+    background: transparent !important;
+}
+
+/* SIDEBAR LOGO */
+[data-testid="stSidebar"] img {
+    max-width: 100% !important;
+    border-radius: 8px;
+}
+
+/* SIDEBAR TEXT */
+[data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] p {
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label {
     color: #FFD700 !important;
     font-weight: 700 !important;
 }
 
+/* SIDEBAR SELECT BOX */
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
     background-color: #FFF8E8 !important;
     border: 2px solid #D4AF37 !important;
@@ -87,35 +96,140 @@ p, label {
     font-weight: 700 !important;
 }
 
+/* SIDEBAR INPUTS */
 [data-testid="stSidebar"] input {
     background-color: #FFF8E8 !important;
     color: #800020 !important;
     border: 2px solid #D4AF37 !important;
     border-radius: 9px !important;
-    font-weight: 600 !important;
 }
 
-.stButton > button {
-    background-color: #800020;
-    color: white;
-    border: 1px solid #D4AF37;
-    border-radius: 9px;
-    font-weight: 600;
+/* KPI CARDS */
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #800020, #4A0012) !important;
+    padding: 22px 18px !important;
+    border-radius: 16px !important;
+    border: 1px solid #D4AF37 !important;
+    box-shadow: 0 5px 14px rgba(70, 0, 20, 0.20) !important;
+    text-align: center !important;
 }
 
-.stButton > button:hover {
-    background-color: #A00030;
-    color: #FFD700;
-    border: 1px solid #FFD700;
+/* KPI LABEL */
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] *,
+[data-testid="stMetricLabel"] p {
+    color: #FFF1D0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
 }
 
-[data-testid="stDataFrame"] {
-    border: 1px solid #D4AF37;
-    border-radius: 10px;
+/* KPI VALUES */
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] *,
+[data-testid="stMetricValue"] div {
+    color: #FFD700 !important;
+    font-size: 30px !important;
+    font-weight: 800 !important;
 }
 
+/* KPI DELTA */
+[data-testid="stMetricDelta"],
+[data-testid="stMetricDelta"] * {
+    color: #FFFFFF !important;
+}
+
+/* BUTTONS */
+.stButton > button,
+.stDownloadButton > button {
+    background: #800020 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #D4AF37 !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    padding: 8px 18px !important;
+    transition: 0.2s ease;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    background: #A00030 !important;
+    color: #FFD700 !important;
+    border: 1px solid #FFD700 !important;
+}
+
+/* INPUT FIELDS */
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input,
+.stTimeInput input {
+    background-color: #FFFDF8 !important;
+    color: #4A0012 !important;
+    border: 1px solid #D4AF37 !important;
+    border-radius: 9px !important;
+}
+
+/* SELECT BOXES */
+[data-baseweb="select"] > div {
+    background-color: #FFFDF8 !important;
+    border: 1px solid #D4AF37 !important;
+    border-radius: 9px !important;
+}
+
+/* TEXT AREAS */
+.stTextArea textarea {
+    background-color: #FFFDF8 !important;
+    color: #4A0012 !important;
+    border: 1px solid #D4AF37 !important;
+    border-radius: 9px !important;
+}
+
+/* TABLES */
+[data-testid="stDataFrame"],
+[data-testid="stTable"] {
+    border: 1px solid #D4AF37 !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+/* EXPANDERS */
+[data-testid="stExpander"] {
+    background: #FFF8E8 !important;
+    border: 1px solid #D4AF37 !important;
+    border-radius: 12px !important;
+}
+
+/* TABS */
+.stTabs [data-baseweb="tab"] {
+    color: #800020 !important;
+    font-weight: 700 !important;
+}
+
+.stTabs [aria-selected="true"] {
+    color: #800020 !important;
+    border-bottom-color: #D4AF37 !important;
+}
+
+/* DIVIDERS */
 hr {
-    border-color: #D4AF37;
+    border-color: #D4AF37 !important;
+}
+
+/* SUCCESS MESSAGE */
+[data-testid="stAlert"] {
+    border-radius: 12px !important;
+}
+
+/* CHART CONTAINERS */
+[data-testid="stPlotlyChart"] {
+    background: #FFFDF8;
+    border: 1px solid #E4C77A;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+/* HIDE DEFAULT FOOTER */
+footer {
+    visibility: hidden;
 }
 
 </style>
@@ -125,11 +239,16 @@ hr {
 # SIDEBAR NAVIGATION
 # ==========================================
 
-st.sidebar.title("🏬 Bedi Cloth House")
-st.sidebar.caption("Tradition Meets Trend")
+logo_path = "bedi_logo.png"
+
+# Store Logo
+if os.path.exists(logo_path):
+    st.sidebar.image(logo_path, width=220)
+
 st.sidebar.markdown("---")
 
-st.sidebar.subheader("Navigation")
+# Navigation
+st.sidebar.subheader("▦ Navigation")
 
 page = st.sidebar.selectbox(
     "Select Module",
@@ -146,6 +265,8 @@ page = st.sidebar.selectbox(
 )
 
 st.sidebar.markdown("---")
+
+# Database Connection
 st.sidebar.subheader("Database Connection")
 
 # ==========================================
@@ -159,11 +280,6 @@ password = db_config["password"]
 # MAIN HEADING
 # ==========================================
 
-logo_path = "bedi_logo.png"
-
-if os.path.exists(logo_path):
-    st.image(logo_path, width=130)
-
 st.title("Bedi Cloth House")
 st.subheader("Management Information System")
 
@@ -174,7 +290,6 @@ st.write(
     "Manage sales, customers, products, inventory and purchases "
     "from one place."
 )
-
 # ==========================================
 # DATABASE CONNECTION
 # ==========================================
