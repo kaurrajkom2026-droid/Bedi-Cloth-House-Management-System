@@ -1,35 +1,39 @@
 import streamlit as st
 import mysql.connector
 import os
+import pandas as pd
+import plotly.express as px
 
-# Page settings
+# ==========================================
+# PAGE SETTINGS
+# ==========================================
+
 st.set_page_config(
     page_title="Bedi Cloth House Management System",
     page_icon="🏬",
     layout="wide"
 )
 
-# Custom design
+# ==========================================
+# CUSTOM DESIGN
+# ==========================================
+
 st.markdown("""
 <style>
 
-/* Main background */
 .stApp {
     background-color: #F8F1E7;
 }
 
-/* Headings */
 h1, h2, h3 {
     color: #800020 !important;
     font-weight: 700;
 }
 
-/* Normal text */
 p, label {
     color: #4A2630;
 }
 
-/* KPI Cards */
 [data-testid="stMetric"] {
     background: linear-gradient(135deg, #800020, #4A0012);
     padding: 22px 18px;
@@ -39,23 +43,6 @@ p, label {
     text-align: center;
 }
 
-/* KPI Labels */
-[data-testid="stMetricLabel"] {
-    color: #F5DFA0 !important;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-/* KPI Values */
-[data-testid="stMetricValue"] {
-    color: #FFD700 !important;
-    font-size: 28px;
-    font-weight: 800;
-}
-
-/* FORCE KPI TEXT VISIBILITY */
-
-/* KPI Labels */
 [data-testid="stMetricLabel"],
 [data-testid="stMetricLabel"] *,
 [data-testid="stMetricLabel"] p {
@@ -64,7 +51,6 @@ p, label {
     font-weight: 700 !important;
 }
 
-/* KPI Numbers */
 [data-testid="stMetricValue"],
 [data-testid="stMetricValue"] *,
 [data-testid="stMetricValue"] div {
@@ -73,20 +59,15 @@ p, label {
     font-weight: 800 !important;
 }
 
-/* KPI Delta Text */
 [data-testid="stMetricDelta"],
 [data-testid="stMetricDelta"] * {
     color: #FFFFFF !important;
 }
 
-/* Sidebar */
 [data-testid="stSidebar"] {
     background-color: #4A0012;
 }
 
-/* SIDEBAR NAVIGATION AND INPUT VISIBILITY */
-
-/* Sidebar headings and labels */
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3,
 [data-testid="stSidebar"] label,
@@ -95,30 +76,17 @@ p, label {
     font-weight: 700 !important;
 }
 
-/* Navigation dropdown */
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
     background-color: #FFF8E8 !important;
     border: 2px solid #D4AF37 !important;
     border-radius: 10px !important;
 }
 
-/* Selected dropdown text */
 [data-testid="stSidebar"] [data-baseweb="select"] * {
     color: #800020 !important;
     font-weight: 700 !important;
 }
 
-/* Dropdown menu options */
-[data-baseweb="popover"] ul {
-    background-color: #FFF8E8 !important;
-}
-
-[data-baseweb="popover"] li {
-    color: #800020 !important;
-    font-weight: 600 !important;
-}
-
-/* Password and other input boxes */
 [data-testid="stSidebar"] input {
     background-color: #FFF8E8 !important;
     color: #800020 !important;
@@ -127,27 +95,6 @@ p, label {
     font-weight: 600 !important;
 }
 
-/* Password placeholder */
-[data-testid="stSidebar"] input::placeholder {
-    color: #987080 !important;
-}
-
-/* Database connection success message */
-[data-testid="stSidebar"] [data-testid="stAlert"] {
-    background-color: #FFF1D0 !important;
-    border: 1px solid #D4AF37 !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stAlert"] * {
-    color: #800020 !important;
-    font-weight: 700 !important;
-}
-
-[data-testid="stSidebar"] * {
-    color: #FFF1D0 !important;
-}
-
-/* Buttons */
 .stButton > button {
     background-color: #800020;
     color: white;
@@ -162,20 +109,11 @@ p, label {
     border: 1px solid #FFD700;
 }
 
-/* Input fields */
-.stTextInput input,
-.stNumberInput input,
-.stSelectbox div[data-baseweb="select"] {
-    border-radius: 8px;
-}
-
-/* Data tables */
 [data-testid="stDataFrame"] {
     border: 1px solid #D4AF37;
     border-radius: 10px;
 }
 
-/* Horizontal divider */
 hr {
     border-color: #D4AF37;
 }
@@ -183,8 +121,10 @@ hr {
 </style>
 """, unsafe_allow_html=True)
 
+# ==========================================
+# SIDEBAR NAVIGATION
+# ==========================================
 
-# Sidebar
 st.sidebar.title("🏬 Bedi Cloth House")
 st.sidebar.caption("Tradition Meets Trend")
 st.sidebar.markdown("---")
@@ -206,14 +146,19 @@ page = st.sidebar.selectbox(
 )
 
 st.sidebar.markdown("---")
-
 st.sidebar.subheader("Database Connection")
+
+# ==========================================
+# DATABASE CONFIGURATION
+# ==========================================
 
 db_config = st.secrets["mysql"]
 password = db_config["password"]
 
+# ==========================================
+# MAIN HEADING
+# ==========================================
 
-# Main heading
 logo_path = "bedi_logo.png"
 
 if os.path.exists(logo_path):
@@ -230,346 +175,571 @@ st.write(
     "from one place."
 )
 
+# ==========================================
+# DATABASE CONNECTION
+# ==========================================
 
-# Database connection
 if password:
 
     try:
+
         connection = mysql.connector.connect(
-        host=db_config["host"],
-        port=int(db_config["port"]),
-        user=db_config["user"],
-        password=db_config["password"],
-        database=db_config["database"],
-        ssl_disabled=False
-)
+            host=db_config["host"],
+            port=int(db_config["port"]),
+            user=db_config["user"],
+            password=db_config["password"],
+            database=db_config["database"],
+            ssl_disabled=False
+        )
 
         cursor = connection.cursor()
 
         st.sidebar.success("Database Connected Successfully!")
 
-        # LIVE BUSINESS DASHBOARD
+        # PART 2 CONTINUES HERE
+                # ==========================================
+        # HELPER FUNCTIONS
+        # ==========================================
 
-        st.markdown("### 📊 Business Overview")
-                # MONTHLY SALES PERFORMANCE
+        def show_table(query, params=None):
 
-        st.markdown("### 📈 Monthly Sales Performance")
+            cursor.execute(query, params or ())
+            rows = cursor.fetchall()
 
-        cursor.execute("""
-            SELECT DATE_FORMAT(Date, '%Y-%m') AS SalesMonth,
-                   SUM(TotalAmount) AS MonthlySales
-            FROM sales_transactions
-            GROUP BY DATE_FORMAT(Date, '%Y-%m')
-            ORDER BY SalesMonth
-        """)
+            columns = [item[0] for item in cursor.description]
 
-        monthly_sales = cursor.fetchall()
-
-        if monthly_sales:
-            import pandas as pd
-
-            sales_df = pd.DataFrame(
-                monthly_sales,
-                columns=["Month", "Sales"]
-            )
-
-            st.line_chart(
-                sales_df.set_index("Month"),
-                height=350,
-                use_container_width=True
-            )
-        else:
-            st.info("No monthly sales data available.")
-                # CATEGORY-WISE SALES ANALYSIS
-
-        st.markdown("---")
-        st.markdown("### 👗 Category-wise Sales")
-
-                # BUSINESS INSIGHTS
-
-        st.markdown("---")
-        st.markdown("### 💡 Business Insights")
-
-        cursor.execute("""
-            SELECT Category, SUM(TotalAmount) AS Sales
-            FROM sales_transactions
-            GROUP BY Category
-            ORDER BY Sales DESC
-            LIMIT 1
-        """)
-
-        top_category = cursor.fetchone()
-
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM inventory
-            WHERE CurrentStock <= ReorderLevel
-        """)
-
-        low_stock_count = cursor.fetchone()[0]
-
-        cursor.execute("""
-            SELECT SalesExecutive, SUM(Profit) AS TotalProfit
-            FROM sales_transactions
-            GROUP BY SalesExecutive
-            ORDER BY TotalProfit DESC
-            LIMIT 1
-        """)
-
-        top_executive = cursor.fetchone()
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.info(
-                f"🏆 Best-Selling Category: {top_category[0]}"
-                if top_category else "No sales data available"
-            )
-
-        with col2:
-            st.warning(f"📦 Low Stock Products: {low_stock_count}")
-
-        with col3:
-            st.success(
-                f"⭐ Top Profit Executive: {top_executive[0]}"
-                if top_executive else "No sales data available"
-            )
-
-        cursor.execute("""
-            SELECT Category, SUM(TotalAmount) AS CategorySales
-            FROM sales_transactions
-            GROUP BY Category
-            ORDER BY CategorySales DESC
-        """)
-
-        category_sales = cursor.fetchall()
-
-        if category_sales:
-            category_df = pd.DataFrame(
-                category_sales,
-                columns=["Category", "Sales"]
-            )
-
-            category_df = category_df.set_index("Category")
-
-            st.bar_chart(
-                category_df,
-                horizontal=True,
-                height=300,
-                use_container_width=True
-            )
-        else:
-            st.info("No category sales data available.")
-
-
-                # PAYMENT MODE ANALYSIS
-
-        st.markdown("---")
-        st.markdown("### 💳 Payment Mode Analysis")
-
-        cursor.execute("""
-            SELECT PaymentMode, COUNT(*) AS Transactions,
-                   SUM(TotalAmount) AS Revenue
-            FROM sales_transactions
-            GROUP BY PaymentMode
-            ORDER BY Revenue DESC
-        """)
-
-        payment_data = cursor.fetchall()
-
-        if payment_data:
-            payment_df = pd.DataFrame(
-                payment_data,
-                columns=["Payment Mode", "Transactions", "Revenue"]
-            )
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.bar_chart(
-                    payment_df.set_index("Payment Mode")[["Transactions"]],
-                    height=300,
-                    use_container_width=True
+            if rows:
+                df = pd.DataFrame(rows, columns=columns)
+                st.dataframe(
+                    df,
+                    use_container_width=True,
+                    hide_index=True
                 )
+            else:
+                st.info("No records found.")
 
-            with col2:
-                st.bar_chart(
-                    payment_df.set_index("Payment Mode")[["Revenue"]],
-                    height=300,
-                    use_container_width=True
-                )
-        else:
-            st.info("No payment data available.")
+        def get_values(query, params=None):
 
-                # TOP 5 BEST-SELLING PRODUCTS
+            cursor.execute(query, params or ())
+            return [row[0] for row in cursor.fetchall()]
 
-        st.markdown("---")
-        st.markdown("### 🏆 Top 5 Best-Selling Products")
+        def safe_commit(message):
 
-        cursor.execute("""
-            SELECT p.ProductName,
-                   SUM(s.TotalAmount) AS TotalSales
-            FROM sales_transactions s
-            JOIN products p
-                ON s.ProductID = p.ProductID
-            GROUP BY p.ProductID, p.ProductName
-            ORDER BY TotalSales DESC
-            LIMIT 5
-        """)
+            connection.commit()
+            st.success(message)
+            st.rerun()
 
-        top_products = cursor.fetchall()
+        # ==========================================
+        # DASHBOARD
+        # ==========================================
 
-        if top_products:
-            products_df = pd.DataFrame(
-                top_products,
-                columns=["Product", "Sales"]
-            )
+        if page == "Dashboard":
 
-            products_df = products_df.set_index("Product")
+            st.header("📊 Business Dashboard")
 
-            st.bar_chart(
-                products_df,
-                horizontal=True,
-                height=300,
-                use_container_width=True
-            )
-        else:
-            st.info("No product sales data available.")
-
-        # Total Sales Revenue
-        cursor.execute("""
-            SELECT COALESCE(SUM(TotalAmount), 0)
-            FROM sales_transactions
-        """)
-        total_revenue = cursor.fetchone()[0]
-
-        # Total Profit
-        cursor.execute("""
-            SELECT COALESCE(SUM(Profit), 0)
-            FROM sales_transactions
-        """)
-        total_profit = cursor.fetchone()[0]
-
-        # Total Customers
-        cursor.execute("SELECT COUNT(*) FROM customers")
-        total_customers = cursor.fetchone()[0]
-
-        # Total Products
-        cursor.execute("SELECT COUNT(*) FROM products")
-        total_products = cursor.fetchone()[0]
-
-        # Total Inventory Stock
-        cursor.execute("""
-            SELECT COALESCE(SUM(CurrentStock), 0)
-            FROM inventory
-        """)
-        total_stock = cursor.fetchone()[0]
-
-        # Total Purchase Amount
-        cursor.execute("""
-            SELECT COALESCE(SUM(TotalAmount), 0)
-            FROM purchases
-        """)
-        total_purchases = cursor.fetchone()[0]
-
-        # First row of KPIs
-        col1, col2, col3 = st.columns(3)
-
-        col1.metric("💰 Total Sales", f"₹{total_revenue:,.2f}")
-        col2.metric("📈 Total Profit", f"₹{total_profit:,.2f}")
-        col3.metric("👥 Total Customers", total_customers)
-
-        # Second row of KPIs
-        col4, col5, col6 = st.columns(3)
-
-        col4.metric("👗 Total Products", total_products)
-        col5.metric("📦 Total Stock Units", total_stock)
-        col6.metric("🛒 Total Purchases", f"₹{total_purchases:,.2f}")
-
-                # CUSTOMER MANAGEMENT MODULE
-        if page == "Customer Management":
-
-            st.markdown("---")
-            st.header("👥 Customer Management")
-
-            # CREATE CUSTOMER
-            st.subheader("➕ Add New Customer")
-
-            with st.form("add_customer_form"):
-
-                new_id = st.text_input("Customer ID")
-                new_name = st.text_input("Customer Name")
-                new_phone = st.text_input("Phone Number")
-                new_city = st.text_input("City")
-                new_date = st.date_input("Join Date")
-
-                add_button = st.form_submit_button("Add Customer")
-
-                if add_button:
-
-                    if new_id and new_name:
-
-                        try:
-                            cursor.execute(
-                                """
-                                INSERT INTO customers
-                                (CustomerID, CustomerName, Phone, City, JoinDate)
-                                VALUES (%s, %s, %s, %s, %s)
-                                """,
-                                (new_id, new_name, new_phone, new_city, new_date)
-                            )
-
-                            connection.commit()
-                            st.success("Customer added successfully!")
-                            st.rerun()
-
-                        except mysql.connector.Error as error:
-                            st.error(f"Unable to add customer: {error}")
-
-                    else:
-                        st.warning("Customer ID and Name are required.")
-
-            st.markdown("---")
-
-            # READ CUSTOMERS
-            st.subheader("📋 Customer Records")
-
+            # FETCH SALES INFORMATION
             cursor.execute("""
-                SELECT CustomerID, CustomerName, Phone, City, JoinDate
+                SELECT
+                    COALESCE(SUM(TotalAmount), 0),
+                    COALESCE(SUM(Profit), 0),
+                    COUNT(*)
+                FROM sales_transactions
+            """)
+
+            sales_summary = cursor.fetchone()
+
+            total_sales = float(sales_summary[0] or 0)
+            total_profit = float(sales_summary[1] or 0)
+            total_transactions = sales_summary[2]
+
+            # FETCH CUSTOMER COUNT
+            cursor.execute("""
+                SELECT COUNT(*)
                 FROM customers
             """)
 
-            records = cursor.fetchall()
-            columns = [description[0] for description in cursor.description]
+            total_customers = cursor.fetchone()[0]
 
-            st.dataframe(
-                [dict(zip(columns, row)) for row in records],
-                use_container_width=True
+            # FETCH PRODUCT COUNT
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM products
+            """)
+
+            total_products = cursor.fetchone()[0]
+
+            # FETCH STOCK
+            cursor.execute("""
+                SELECT COALESCE(SUM(CurrentStock), 0)
+                FROM inventory
+            """)
+
+            total_stock = cursor.fetchone()[0]
+
+            # FETCH PURCHASE AMOUNT
+            cursor.execute("""
+                SELECT COALESCE(SUM(TotalAmount), 0)
+                FROM purchases
+            """)
+
+            total_purchases = float(cursor.fetchone()[0] or 0)
+
+            # ======================================
+            # KPI CARDS
+            # ======================================
+
+            col1, col2, col3 = st.columns(3)
+
+            col1.metric(
+                "💰 Total Sales",
+                f"₹{total_sales:,.0f}"
+            )
+
+            col2.metric(
+                "📈 Total Profit",
+                f"₹{total_profit:,.0f}"
+            )
+
+            col3.metric(
+                "🧾 Transactions",
+                total_transactions
+            )
+
+            col4, col5, col6 = st.columns(3)
+
+            col4.metric(
+                "👥 Total Customers",
+                total_customers
+            )
+
+            col5.metric(
+                "👗 Total Products",
+                total_products
+            )
+
+            col6.metric(
+                "📦 Stock Units",
+                total_stock
             )
 
             st.markdown("---")
 
+            # ======================================
+            # BUSINESS INSIGHTS
+            # ======================================
+
+            st.subheader("💡 Business Highlights")
+
+            cursor.execute("""
+                SELECT
+                    Category,
+                    SUM(TotalAmount) AS TotalSales
+                FROM sales_transactions
+                GROUP BY Category
+                ORDER BY TotalSales DESC
+                LIMIT 1
+            """)
+
+            top_category = cursor.fetchone()
+
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM inventory
+                WHERE CurrentStock <= ReorderLevel
+            """)
+
+            low_stock = cursor.fetchone()[0]
+
+            cursor.execute("""
+                SELECT
+                    SalesExecutive,
+                    SUM(Profit) AS TotalProfit
+                FROM sales_transactions
+                GROUP BY SalesExecutive
+                ORDER BY TotalProfit DESC
+                LIMIT 1
+            """)
+
+            top_executive = cursor.fetchone()
+
+            h1, h2, h3 = st.columns(3)
+
+            with h1:
+                if top_category:
+                    st.info(
+                        f"🏆 Best-Selling Category\n\n"
+                        f"**{top_category[0]}**"
+                    )
+                else:
+                    st.info("No category information available.")
+
+            with h2:
+                st.warning(
+                    f"📦 Low Stock Products\n\n"
+                    f"**{low_stock} products need attention**"
+                )
+
+            with h3:
+                if top_executive:
+                    st.success(
+                        f"⭐ Top Profit Executive\n\n"
+                        f"**{top_executive[0]}**"
+                    )
+                else:
+                    st.success("No executive information available.")
+
+            st.markdown("---")
+
+            # ======================================
+            # CHART COLOURS
+            # ======================================
+
+            chart_colors = [
+                "#800020",
+                "#D4AF37",
+                "#A00030",
+                "#E6C875",
+                "#4A0012",
+                "#B76E79"
+            ]
+
+            # ======================================
+            # CATEGORY-WISE SALES CHART
+            # ======================================
+
+            st.subheader("👗 Category-wise Sales Distribution")
+
+            cursor.execute("""
+                SELECT
+                    Category,
+                    SUM(TotalAmount) AS CategorySales
+                FROM sales_transactions
+                GROUP BY Category
+                ORDER BY CategorySales DESC
+            """)
+
+            category_data = cursor.fetchall()
+
+            if category_data:
+
+                category_df = pd.DataFrame(
+                    category_data,
+                    columns=["Category", "Sales"]
+                )
+
+                fig_category = px.pie(
+                    category_df,
+                    names="Category",
+                    values="Sales",
+                    hole=0.55,
+                    color_discrete_sequence=chart_colors,
+                    title="Sales Contribution by Category"
+                )
+
+                fig_category.update_traces(
+                    textposition="inside",
+                    textinfo="percent+label"
+                )
+
+                fig_category.update_layout(
+                    height=430,
+                    font=dict(color="#4A0012"),
+                    title_font=dict(
+                        size=20,
+                        color="#800020"
+                    )
+                )
+
+                st.plotly_chart(
+                    fig_category,
+                    use_container_width=True
+                )
+
+            else:
+                st.info("No category sales data available.")
+
+            st.markdown("---")
+
+            # ======================================
+            # PAYMENT MODE ANALYSIS
+            # ======================================
+
+            st.subheader("💳 Payment Mode Analysis")
+
+            cursor.execute("""
+                SELECT
+                    PaymentMode,
+                    COUNT(*) AS Transactions,
+                    SUM(TotalAmount) AS Revenue
+                FROM sales_transactions
+                GROUP BY PaymentMode
+                ORDER BY Revenue DESC
+            """)
+
+            payment_data = cursor.fetchall()
+
+            if payment_data:
+
+                payment_df = pd.DataFrame(
+                    payment_data,
+                    columns=[
+                        "Payment Mode",
+                        "Transactions",
+                        "Revenue"
+                    ]
+                )
+
+                pc1, pc2 = st.columns(2)
+
+                with pc1:
+
+                    fig_payment = px.pie(
+                        payment_df,
+                        names="Payment Mode",
+                        values="Transactions",
+                        hole=0.55,
+                        color_discrete_sequence=chart_colors,
+                        title="Transactions by Payment Mode"
+                    )
+
+                    fig_payment.update_traces(
+                        textposition="inside",
+                        textinfo="percent+label"
+                    )
+
+                    fig_payment.update_layout(
+                        height=380,
+                        font=dict(color="#4A0012")
+                    )
+
+                    st.plotly_chart(
+                        fig_payment,
+                        use_container_width=True
+                    )
+
+                with pc2:
+
+                    fig_revenue = px.bar(
+                        payment_df,
+                        x="Payment Mode",
+                        y="Revenue",
+                        text="Revenue",
+                        color="Payment Mode",
+                        color_discrete_sequence=chart_colors,
+                        title="Revenue by Payment Mode"
+                    )
+
+                    fig_revenue.update_traces(
+                        texttemplate="₹%{y:,.0f}",
+                        textposition="outside"
+                    )
+
+                    fig_revenue.update_layout(
+                        height=380,
+                        showlegend=False,
+                        yaxis_title="Revenue (₹)",
+                        font=dict(color="#4A0012")
+                    )
+
+                    st.plotly_chart(
+                        fig_revenue,
+                        use_container_width=True
+                    )
+
+            else:
+                st.info("No payment information available.")
+
+            st.markdown("---")
+
+            # ======================================
+            # TOP 5 BEST-SELLING PRODUCTS
+            # ======================================
+
+            st.subheader("🏆 Top 5 Best-Selling Products")
+
+            cursor.execute("""
+                SELECT
+                    p.ProductName,
+                    SUM(s.TotalAmount) AS TotalSales
+                FROM sales_transactions s
+                JOIN products p
+                    ON s.ProductID = p.ProductID
+                GROUP BY p.ProductID, p.ProductName
+                ORDER BY TotalSales DESC
+                LIMIT 5
+            """)
+
+            product_data = cursor.fetchall()
+
+            if product_data:
+
+                product_df = pd.DataFrame(
+                    product_data,
+                    columns=["Product", "Sales"]
+                )
+
+                product_df = product_df.sort_values(
+                    "Sales",
+                    ascending=True
+                )
+
+                fig_products = px.bar(
+                    product_df,
+                    x="Sales",
+                    y="Product",
+                    orientation="h",
+                    text="Sales",
+                    color="Sales",
+                    color_continuous_scale=[
+                        "#E6C875",
+                        "#A00030",
+                        "#800020"
+                    ],
+                    title="Top Performing Products"
+                )
+
+                fig_products.update_traces(
+                    texttemplate="₹%{x:,.0f}",
+                    textposition="outside"
+                )
+
+                fig_products.update_layout(
+                    height=430,
+                    coloraxis_showscale=False,
+                    xaxis_title="Total Sales (₹)",
+                    yaxis_title="Product",
+                    font=dict(color="#4A0012")
+                )
+
+                st.plotly_chart(
+                    fig_products,
+                    use_container_width=True
+                )
+
+            else:
+                st.info("No product sales data available.")
+
+            st.markdown("---")
+
+            # ======================================
+            # PURCHASE SUMMARY
+            # ======================================
+
+            st.subheader("🛒 Purchase Overview")
+
+            st.metric(
+                "Total Purchase Amount",
+                f"₹{total_purchases:,.0f}"
+            )
+                    # ==========================================
+        # CUSTOMER MANAGEMENT
+        # ==========================================
+
+        elif page == "Customer Management":
+
+            st.header("👥 Customer Management")
+
+            st.write(
+                "Add, view, update and manage customer information."
+            )
+
+            # ADD CUSTOMER
+            with st.expander("➕ Add New Customer", expanded=True):
+
+                with st.form("add_customer_form"):
+
+                    new_id = st.text_input("Customer ID")
+                    new_name = st.text_input("Customer Name")
+                    new_phone = st.text_input("Phone Number")
+                    new_city = st.text_input("City")
+                    new_date = st.date_input("Join Date")
+
+                    submitted = st.form_submit_button(
+                        "Add Customer"
+                    )
+
+                    if submitted:
+
+                        if new_id.strip() and new_name.strip():
+
+                            try:
+
+                                cursor.execute("""
+                                    INSERT INTO customers
+                                    (
+                                        CustomerID,
+                                        CustomerName,
+                                        Phone,
+                                        City,
+                                        JoinDate
+                                    )
+                                    VALUES (%s, %s, %s, %s, %s)
+                                """, (
+                                    new_id.strip(),
+                                    new_name.strip(),
+                                    new_phone.strip(),
+                                    new_city.strip(),
+                                    new_date
+                                ))
+
+                                safe_commit(
+                                    "Customer added successfully!"
+                                )
+
+                            except mysql.connector.Error as error:
+
+                                connection.rollback()
+
+                                st.error(
+                                    f"Unable to add customer: {error}"
+                                )
+
+                        else:
+
+                            st.warning(
+                                "Customer ID and Customer Name are required."
+                            )
+
+            # CUSTOMER RECORDS
+            st.markdown("---")
+            st.subheader("📋 Customer Records")
+
+            show_table("""
+                SELECT
+                    CustomerID,
+                    CustomerName,
+                    Phone,
+                    City,
+                    JoinDate
+                FROM customers
+                ORDER BY CustomerName
+            """)
+
+            customer_ids = get_values("""
+                SELECT CustomerID
+                FROM customers
+                ORDER BY CustomerID
+            """)
+
             # UPDATE CUSTOMER
-            st.subheader("✏️ Update Customer")
-
-            cursor.execute("SELECT CustomerID FROM customers")
-            customer_ids = [row[0] for row in cursor.fetchall()]
-
             if customer_ids:
+
+                st.markdown("---")
+                st.subheader("✏️ Update Customer")
 
                 selected_id = st.selectbox(
                     "Select Customer ID to Update",
                     customer_ids
                 )
 
-                cursor.execute(
-                    """
-                    SELECT CustomerName, Phone, City
+                cursor.execute("""
+                    SELECT
+                        CustomerName,
+                        Phone,
+                        City
                     FROM customers
-                    WHERE CustomerID = %s
-                    """,
-                    (selected_id,)
-                )
+                    WHERE CustomerID=%s
+                """, (selected_id,))
 
                 customer = cursor.fetchone()
 
@@ -577,7 +747,7 @@ if password:
 
                     updated_name = st.text_input(
                         "Customer Name",
-                        value=customer[0]
+                        value=customer[0] or ""
                     )
 
                     updated_phone = st.text_input(
@@ -590,137 +760,243 @@ if password:
                         value=customer[2] or ""
                     )
 
-                    update_button = st.form_submit_button("Update Customer")
+                    update_btn = st.form_submit_button(
+                        "Update Customer"
+                    )
 
-                    if update_button:
+                    if update_btn:
 
-                        cursor.execute(
-                            """
-                            UPDATE customers
-                            SET CustomerName = %s, Phone = %s, City = %s
-                            WHERE CustomerID = %s
-                            """,
-                            (updated_name, updated_phone, updated_city, selected_id)
-                        )
+                        if updated_name.strip():
 
-                        connection.commit()
-                        st.success("Customer updated successfully!")
-                        st.rerun()
+                            try:
 
-            st.markdown("---")
+                                cursor.execute("""
+                                    UPDATE customers
+                                    SET
+                                        CustomerName=%s,
+                                        Phone=%s,
+                                        City=%s
+                                    WHERE CustomerID=%s
+                                """, (
+                                    updated_name.strip(),
+                                    updated_phone.strip(),
+                                    updated_city.strip(),
+                                    selected_id
+                                ))
 
-            # DELETE CUSTOMER
-            st.subheader("🗑️ Delete Customer")
+                                safe_commit(
+                                    "Customer updated successfully!"
+                                )
 
-            delete_id = st.selectbox(
-                "Select Customer ID to Delete",
-                customer_ids,
-                key="delete_customer"
-            ) if customer_ids else None
+                            except mysql.connector.Error as error:
 
-            if delete_id:
+                                connection.rollback()
 
-                if st.button("Delete Customer", type="primary"):
+                                st.error(
+                                    f"Unable to update customer: {error}"
+                                )
+
+                        else:
+
+                            st.warning(
+                                "Customer name cannot be empty."
+                            )
+
+                # DELETE CUSTOMER
+                st.markdown("---")
+                st.subheader("🗑️ Delete Customer")
+
+                delete_id = st.selectbox(
+                    "Select Customer ID to Delete",
+                    customer_ids,
+                    key="delete_customer"
+                )
+
+                if st.button(
+                    "Delete Customer",
+                    key="delete_customer_button"
+                ):
 
                     try:
-                        cursor.execute(
-                            "DELETE FROM customers WHERE CustomerID = %s",
-                            (delete_id,)
-                        )
 
-                        connection.commit()
-                        st.success("Customer deleted successfully!")
-                        st.rerun()
+                        cursor.execute("""
+                            DELETE FROM customers
+                            WHERE CustomerID=%s
+                        """, (delete_id,))
+
+                        safe_commit(
+                            "Customer deleted successfully!"
+                        )
 
                     except mysql.connector.Error as error:
-                        st.error(
-                            f"Cannot delete this customer: {error}. "
-                            "The customer may have existing sales records."
-                        )
-            # PRODUCT MANAGEMENT MODULE
-        if page == "Product Management":
 
-            st.markdown("---")
+                        connection.rollback()
+
+                        st.error(
+                            "This customer cannot be deleted because "
+                            "they may have linked sales records."
+                        )
+
+            else:
+
+                st.info("No customer records are available.")
+
+        # ==========================================
+        # PRODUCT MANAGEMENT
+        # ==========================================
+
+        elif page == "Product Management":
+
             st.header("👗 Product Management")
 
-            cursor.execute("SELECT Category FROM categories")
-            categories = [row[0] for row in cursor.fetchall()]
-
-            # ADD PRODUCT
-            st.subheader("➕ Add New Product")
-
-            with st.form("add_product_form"):
-
-                product_id = st.text_input("Product ID")
-                product_name = st.text_input("Product Name")
-                category = st.selectbox("Category", categories)
-
-                cost_price = st.number_input("Cost Price", min_value=0.0)
-                selling_price = st.number_input("Selling Price", min_value=0.0)
-                margin = st.number_input("Margin Percentage", min_value=0.0)
-
-                add_product = st.form_submit_button("Add Product")
-
-                if add_product:
-
-                    if product_id and product_name:
-
-                        try:
-                            cursor.execute("""
-                                INSERT INTO products
-                                (ProductID, ProductName, Category,
-                                 CostPrice, SellingPrice, MarginPct)
-                                VALUES (%s, %s, %s, %s, %s, %s)
-                            """, (
-                                product_id, product_name, category,
-                                cost_price, selling_price, margin
-                            ))
-
-                            connection.commit()
-                            st.success("Product added successfully!")
-                            st.rerun()
-
-                        except mysql.connector.Error as error:
-                            st.error(f"Error: {error}")
-
-                    else:
-                        st.warning("Product ID and Product Name are required.")
-
-            st.markdown("---")
-
-            # VIEW PRODUCTS
-            st.subheader("📋 Product Records")
-
-            cursor.execute("SELECT * FROM products")
-            records = cursor.fetchall()
-
-            columns = [description[0] for description in cursor.description]
-
-            st.dataframe(
-                [dict(zip(columns, row)) for row in records],
-                use_container_width=True
+            st.write(
+                "Manage product details, prices and categories."
             )
 
+            categories = get_values("""
+                SELECT Category
+                FROM categories
+                ORDER BY Category
+            """)
+
+            # ADD PRODUCT
+            if categories:
+
+                with st.expander(
+                    "➕ Add New Product",
+                    expanded=True
+                ):
+
+                    with st.form("add_product_form"):
+
+                        product_id = st.text_input("Product ID")
+
+                        product_name = st.text_input(
+                            "Product Name"
+                        )
+
+                        category = st.selectbox(
+                            "Category",
+                            categories
+                        )
+
+                        cost_price = st.number_input(
+                            "Cost Price (₹)",
+                            min_value=0.0,
+                            value=0.0
+                        )
+
+                        selling_price = st.number_input(
+                            "Selling Price (₹)",
+                            min_value=0.0,
+                            value=0.0
+                        )
+
+                        margin = st.number_input(
+                            "Margin Percentage",
+                            min_value=0.0,
+                            value=0.0
+                        )
+
+                        add_product = st.form_submit_button(
+                            "Add Product"
+                        )
+
+                        if add_product:
+
+                            if (
+                                product_id.strip()
+                                and product_name.strip()
+                            ):
+
+                                try:
+
+                                    cursor.execute("""
+                                        INSERT INTO products
+                                        (
+                                            ProductID,
+                                            ProductName,
+                                            Category,
+                                            CostPrice,
+                                            SellingPrice,
+                                            MarginPct
+                                        )
+                                        VALUES (%s, %s, %s, %s, %s, %s)
+                                    """, (
+                                        product_id.strip(),
+                                        product_name.strip(),
+                                        category,
+                                        cost_price,
+                                        selling_price,
+                                        margin
+                                    ))
+
+                                    safe_commit(
+                                        "Product added successfully!"
+                                    )
+
+                                except mysql.connector.Error as error:
+
+                                    connection.rollback()
+
+                                    st.error(
+                                        f"Unable to add product: {error}"
+                                    )
+
+                            else:
+
+                                st.warning(
+                                    "Product ID and Product Name are required."
+                                )
+
+            else:
+
+                st.warning(
+                    "No categories found in the database."
+                )
+
+            # PRODUCT RECORDS
             st.markdown("---")
+            st.subheader("📋 Product Records")
 
-            # UPDATE PRODUCT
-            st.subheader("✏️ Update Product")
+            show_table("""
+                SELECT
+                    ProductID,
+                    ProductName,
+                    Category,
+                    CostPrice,
+                    SellingPrice,
+                    MarginPct
+                FROM products
+                ORDER BY ProductName
+            """)
 
-            cursor.execute("SELECT ProductID FROM products")
-            product_ids = [row[0] for row in cursor.fetchall()]
+            product_ids = get_values("""
+                SELECT ProductID
+                FROM products
+                ORDER BY ProductID
+            """)
 
-            if product_ids:
+            # UPDATE AND DELETE PRODUCT
+            if product_ids and categories:
+
+                st.markdown("---")
+                st.subheader("✏️ Update Product")
 
                 selected_product = st.selectbox(
-                    "Select Product ID",
+                    "Select Product ID to Update",
                     product_ids
                 )
 
                 cursor.execute("""
-                    SELECT ProductName, Category, CostPrice,
-                           SellingPrice, MarginPct
+                    SELECT
+                        ProductName,
+                        Category,
+                        CostPrice,
+                        SellingPrice,
+                        MarginPct
                     FROM products
-                    WHERE ProductID = %s
+                    WHERE ProductID=%s
                 """, (selected_product,))
 
                 product = cursor.fetchone()
@@ -729,23 +1005,29 @@ if password:
 
                     updated_name = st.text_input(
                         "Product Name",
-                        value=product[0]
+                        value=product[0] or ""
+                    )
+
+                    category_index = (
+                        categories.index(product[1])
+                        if product[1] in categories
+                        else 0
                     )
 
                     updated_category = st.selectbox(
                         "Category",
                         categories,
-                        index=categories.index(product[1])
+                        index=category_index
                     )
 
                     updated_cost = st.number_input(
-                        "Cost Price",
+                        "Cost Price (₹)",
                         min_value=0.0,
                         value=float(product[2] or 0)
                     )
 
                     updated_selling = st.number_input(
-                        "Selling Price",
+                        "Selling Price (₹)",
                         min_value=0.0,
                         value=float(product[3] or 0)
                     )
@@ -756,200 +1038,286 @@ if password:
                         value=float(product[4] or 0)
                     )
 
-                    update_product = st.form_submit_button("Update Product")
+                    update_product = st.form_submit_button(
+                        "Update Product"
+                    )
 
                     if update_product:
 
-                        cursor.execute("""
-                            UPDATE products
-                            SET ProductName=%s, Category=%s,
-                                CostPrice=%s, SellingPrice=%s,
-                                MarginPct=%s
-                            WHERE ProductID=%s
-                        """, (
-                            updated_name, updated_category,
-                            updated_cost, updated_selling,
-                            updated_margin, selected_product
-                        ))
+                        if updated_name.strip():
 
-                        connection.commit()
-                        st.success("Product updated successfully!")
-                        st.rerun()
+                            try:
 
-            st.markdown("---")
+                                cursor.execute("""
+                                    UPDATE products
+                                    SET
+                                        ProductName=%s,
+                                        Category=%s,
+                                        CostPrice=%s,
+                                        SellingPrice=%s,
+                                        MarginPct=%s
+                                    WHERE ProductID=%s
+                                """, (
+                                    updated_name.strip(),
+                                    updated_category,
+                                    updated_cost,
+                                    updated_selling,
+                                    updated_margin,
+                                    selected_product
+                                ))
 
-            # DELETE PRODUCT
-            st.subheader("🗑️ Delete Product")
+                                safe_commit(
+                                    "Product updated successfully!"
+                                )
 
-            delete_product = st.selectbox(
-                "Select Product to Delete",
-                product_ids,
-                key="delete_product"
-            ) if product_ids else None
+                            except mysql.connector.Error as error:
 
-            if delete_product:
+                                connection.rollback()
 
-                if st.button("Delete Product", type="primary"):
+                                st.error(
+                                    f"Unable to update product: {error}"
+                                )
+
+                        else:
+
+                            st.warning(
+                                "Product name cannot be empty."
+                            )
+
+                # DELETE PRODUCT
+                st.markdown("---")
+                st.subheader("🗑️ Delete Product")
+
+                delete_product = st.selectbox(
+                    "Select Product ID to Delete",
+                    product_ids,
+                    key="delete_product"
+                )
+
+                if st.button(
+                    "Delete Product",
+                    key="delete_product_button"
+                ):
 
                     try:
-                        cursor.execute(
-                            "DELETE FROM products WHERE ProductID=%s",
-                            (delete_product,)
+
+                        cursor.execute("""
+                            DELETE FROM products
+                            WHERE ProductID=%s
+                        """, (delete_product,))
+
+                        safe_commit(
+                            "Product deleted successfully!"
                         )
 
-                        connection.commit()
-                        st.success("Product deleted successfully!")
-                        st.rerun()
-
                     except mysql.connector.Error as error:
-                        st.error(f"Cannot delete product: {error}")
-            # INVENTORY MANAGEMENT MODULE
-        if page == "Inventory Management":
 
-            st.markdown("---")
+                        connection.rollback()
+
+                        st.error(
+                            "This product cannot be deleted because "
+                            "it may be linked to sales, inventory "
+                            "or purchase records."
+                        )
+
+            elif not product_ids:
+
+                st.info("No product records are available.")
+
+                    # ==========================================
+        # INVENTORY MANAGEMENT
+        # ==========================================
+
+        elif page == "Inventory Management":
+
             st.header("📦 Inventory Management")
+
+            st.write(
+                "Monitor stock levels, stock value and low-stock products."
+            )
 
             # INVENTORY SUMMARY
             cursor.execute("""
                 SELECT
-                    COUNT(*) AS TotalProducts,
-                    COALESCE(SUM(CurrentStock), 0) AS TotalStock,
-                    COALESCE(SUM(StockValue), 0) AS TotalValue,
-                    SUM(CASE WHEN CurrentStock <= ReorderLevel
-                        AND CurrentStock > 0 THEN 1 ELSE 0 END) AS LowStock,
-                    SUM(CASE WHEN CurrentStock = 0
-                        THEN 1 ELSE 0 END) AS OutOfStock
+                    COUNT(*),
+                    COALESCE(SUM(CurrentStock), 0),
+                    COALESCE(SUM(StockValue), 0),
+                    SUM(
+                        CASE
+                            WHEN CurrentStock <= ReorderLevel
+                            AND CurrentStock > 0
+                            THEN 1 ELSE 0
+                        END
+                    ),
+                    SUM(
+                        CASE
+                            WHEN CurrentStock = 0
+                            THEN 1 ELSE 0
+                        END
+                    )
                 FROM inventory
             """)
 
-            summary = cursor.fetchone()
+            inventory_summary = cursor.fetchone()
 
-            col1, col2, col3, col4, col5 = st.columns(5)
+            c1, c2, c3, c4, c5 = st.columns(5)
 
-            col1.metric("Total Products", summary[0])
-            col2.metric("Total Stock", summary[1])
-            col3.metric("Stock Value", f"₹{summary[2]:,.0f}")
-            col4.metric("Low Stock", summary[3] or 0)
-            col5.metric("Out of Stock", summary[4] or 0)
+            c1.metric(
+                "Total SKUs",
+                inventory_summary[0]
+            )
 
-            st.markdown("---")
+            c2.metric(
+                "Stock Units",
+                inventory_summary[1]
+            )
 
-            # VIEW INVENTORY
-            st.subheader("📋 Inventory Records")
+            c3.metric(
+                "Stock Value",
+                f"₹{float(inventory_summary[2] or 0):,.0f}"
+            )
 
-            cursor.execute("""
-                SELECT ProductID, ProductName, Category,
-                       CurrentStock, ReorderLevel, Status,
-                       StockValue, PreferredSupplierID
-                FROM inventory
-            """)
+            c4.metric(
+                "Low Stock",
+                inventory_summary[3] or 0
+            )
 
-            records = cursor.fetchall()
-            columns = [description[0] for description in cursor.description]
-
-            st.dataframe(
-                [dict(zip(columns, row)) for row in records],
-                use_container_width=True
+            c5.metric(
+                "Out of Stock",
+                inventory_summary[4] or 0
             )
 
             st.markdown("---")
 
-            # LOW STOCK ALERT
+            # INVENTORY RECORDS
+            st.subheader("📋 Inventory Records")
+
+            show_table("""
+                SELECT
+                    ProductID,
+                    ProductName,
+                    Category,
+                    CurrentStock,
+                    ReorderLevel,
+                    Status,
+                    StockValue,
+                    PreferredSupplierID
+                FROM inventory
+                ORDER BY ProductName
+            """)
+
+            st.markdown("---")
+
+            # LOW STOCK ALERTS
             st.subheader("⚠️ Low Stock Alerts")
 
-            cursor.execute("""
-                SELECT ProductID, ProductName, CurrentStock, ReorderLevel
+            show_table("""
+                SELECT
+                    ProductID,
+                    ProductName,
+                    CurrentStock,
+                    ReorderLevel,
+                    Status
                 FROM inventory
                 WHERE CurrentStock <= ReorderLevel
                 ORDER BY CurrentStock ASC
             """)
 
-            low_stock = cursor.fetchall()
-
-            if low_stock:
-                st.warning(f"{len(low_stock)} products require stock attention.")
-                st.dataframe(
-                    low_stock,
-                    column_config={
-                        0: "Product ID",
-                        1: "Product Name",
-                        2: "Current Stock",
-                        3: "Reorder Level"
-                    },
-                    use_container_width=True
-                )
-            else:
-                st.success("All products have sufficient stock.")
-
-            st.markdown("---")
-
             # UPDATE INVENTORY
-            st.subheader("✏️ Update Stock")
+            inventory_ids = get_values("""
+                SELECT ProductID
+                FROM inventory
+                ORDER BY ProductID
+            """)
 
-            cursor.execute("SELECT ProductID FROM inventory")
-            product_ids = [row[0] for row in cursor.fetchall()]
+            if inventory_ids:
 
-            if product_ids:
+                st.markdown("---")
+                st.subheader("✏️ Update Stock")
 
-                selected_id = st.selectbox(
+                selected_inventory = st.selectbox(
                     "Select Product ID",
-                    product_ids
+                    inventory_ids
                 )
 
                 cursor.execute("""
-                    SELECT CurrentStock, ReorderLevel
+                    SELECT
+                        CurrentStock,
+                        ReorderLevel
                     FROM inventory
-                    WHERE ProductID = %s
-                """, (selected_id,))
+                    WHERE ProductID=%s
+                """, (selected_inventory,))
 
-                stock = cursor.fetchone()
+                stock_details = cursor.fetchone()
 
                 with st.form("update_inventory_form"):
 
                     new_stock = st.number_input(
-                        "New Stock Quantity",
+                        "Current Stock Quantity",
                         min_value=0,
-                        value=int(stock[0])
+                        value=int(stock_details[0] or 0)
                     )
 
                     new_reorder = st.number_input(
-                        "New Reorder Level",
+                        "Reorder Level",
                         min_value=0,
-                        value=int(stock[1])
+                        value=int(stock_details[1] or 0)
                     )
 
-                    update_stock = st.form_submit_button("Update Inventory")
+                    update_inventory = st.form_submit_button(
+                        "Update Inventory"
+                    )
 
-                    if update_stock:
+                    if update_inventory:
 
-                        status = (
-                            "Out of Stock" if new_stock == 0
-                            else "Low Stock" if new_stock <= new_reorder
-                            else "In Stock"
-                        )
+                        if new_stock == 0:
+                            new_status = "Out of Stock"
 
-                        cursor.execute("""
-                            UPDATE inventory
-                            SET CurrentStock = %s,
-                                ReorderLevel = %s,
-                                Status = %s
-                            WHERE ProductID = %s
-                        """, (
-                            new_stock,
-                            new_reorder,
-                            status,
-                            selected_id
-                        ))
+                        elif new_stock <= new_reorder:
+                            new_status = "Low Stock"
 
-                        connection.commit()
-                        st.success("Inventory updated successfully!")
-                        st.rerun()
+                        else:
+                            new_status = "In Stock"
 
-                # SALES MANAGEMENT MODULE
-        if page == "Sales Management":
+                        try:
 
-            st.markdown("---")
+                            cursor.execute("""
+                                UPDATE inventory
+                                SET
+                                    CurrentStock=%s,
+                                    ReorderLevel=%s,
+                                    Status=%s
+                                WHERE ProductID=%s
+                            """, (
+                                new_stock,
+                                new_reorder,
+                                new_status,
+                                selected_inventory
+                            ))
+
+                            safe_commit(
+                                "Inventory updated successfully!"
+                            )
+
+                        except mysql.connector.Error as error:
+
+                            connection.rollback()
+
+                            st.error(
+                                f"Unable to update inventory: {error}"
+                            )
+
+            # ==========================================
+            # SALES MANAGEMENT
+            # ==========================================
+
+        elif page == "Sales Management":
+
             st.header("💰 Sales Management")
+
+            st.write(
+                "View sales transactions and record new sales."
+            )
 
             # SALES SUMMARY
             cursor.execute("""
@@ -962,210 +1330,344 @@ if password:
 
             sales_summary = cursor.fetchone()
 
-            col1, col2, col3 = st.columns(3)
+            s1, s2, s3 = st.columns(3)
 
-            col1.metric("Total Sales Revenue", f"₹{sales_summary[0]:,.2f}")
-            col2.metric("Total Profit", f"₹{sales_summary[1]:,.2f}")
-            col3.metric("Total Transactions", sales_summary[2])
+            s1.metric(
+                "Total Revenue",
+                f"₹{float(sales_summary[0]):,.0f}"
+            )
+
+            s2.metric(
+                "Total Profit",
+                f"₹{float(sales_summary[1]):,.0f}"
+            )
+
+            s3.metric(
+                "Total Transactions",
+                sales_summary[2]
+            )
 
             st.markdown("---")
 
             # SALES FILTERS
-            st.subheader("🔍 Filter Sales")
-
-            filter_col1, filter_col2 = st.columns(2)
+            st.subheader("🔍 Search and Filter Sales")
 
             filter_col1, filter_col2 = st.columns(2)
 
             with filter_col1:
-                payment_mode = st.selectbox(
+
+                payment_filter = st.selectbox(
                     "Payment Mode",
                     ["All", "Cash", "UPI", "Card"]
                 )
 
             with filter_col2:
-                search_bill = st.text_input("Search Bill Number")
 
-            query = """
-                SELECT BillNo, Date, CustomerID, ProductID,
-                       Category, Qty, TotalAmount, Profit,
-                       SalesExecutive, PaymentMode
+                search_bill = st.text_input(
+                    "Search Bill Number"
+                )
+
+            sales_query = """
+                SELECT
+                    BillNo,
+                    Date,
+                    CustomerID,
+                    ProductID,
+                    Category,
+                    Qty,
+                    TotalAmount,
+                    Profit,
+                    SalesExecutive,
+                    PaymentMode
                 FROM sales_transactions
                 WHERE 1=1
             """
 
-            parameters = []
+            sales_params = []
 
-            if payment_mode != "All":
-                query += " AND PaymentMode = %s"
-                parameters.append(payment_mode)
+            if payment_filter != "All":
 
-            if search_bill:
-                query += " AND BillNo LIKE %s"
-                parameters.append(f"%{search_bill}%")
+                sales_query += " AND PaymentMode=%s"
+                sales_params.append(payment_filter)
 
-            query += " ORDER BY Date DESC"
+            if search_bill.strip():
 
-            cursor.execute(query, tuple(parameters))
+                sales_query += " AND BillNo LIKE %s"
+                sales_params.append(
+                    "%" + search_bill.strip() + "%"
+                )
 
-            sales_records = cursor.fetchall()
-
-            columns = [description[0] for description in cursor.description]
+            sales_query += " ORDER BY Date DESC"
 
             st.subheader("📋 Sales Transactions")
 
-            st.dataframe(
-                [dict(zip(columns, row)) for row in sales_records],
-                use_container_width=True
+            show_table(
+                sales_query,
+                tuple(sales_params)
             )
 
-            st.caption(f"Records displayed: {len(sales_records)}")
             st.markdown("---")
+
+            # ADD NEW SALE
             st.subheader("➕ Add New Sales Transaction")
 
-            with st.form("add_sales_form"):
+            customer_ids = get_values("""
+                SELECT CustomerID
+                FROM customers
+                ORDER BY CustomerID
+            """)
 
-                bill_no = st.text_input("Bill Number")
+            product_ids = get_values("""
+                SELECT ProductID
+                FROM products
+                ORDER BY ProductID
+            """)
 
-                cursor.execute("SELECT CustomerID FROM customers")
-                customer_ids = [row[0] for row in cursor.fetchall()]
+            if not customer_ids or not product_ids:
 
-                cursor.execute("SELECT ProductID FROM products")
-                product_ids = [row[0] for row in cursor.fetchall()]
-
-                customer_id = st.selectbox("Customer", customer_ids)
-                product_id = st.selectbox("Product", product_ids)
-
-                quantity = st.number_input("Quantity", min_value=1, value=1)
-
-                sales_date = st.date_input("Sales Date")
-
-                sales_executive = st.text_input("Sales Executive")
-
-                payment_mode = st.selectbox(
-                    "Payment Mode",
-                    ["Cash", "UPI", "Card"]
+                st.warning(
+                    "Please add customers and products before "
+                    "recording a sale."
                 )
 
-                discount = st.number_input(
-                    "Discount Percentage",
-                    min_value=0.0,
-                    max_value=100.0,
-                    value=0.0
-                )
+            else:
 
-                submit_sale = st.form_submit_button("Add Sale")
+                with st.form("add_sales_form"):
 
-                if submit_sale:
-                    cursor.execute(
-                       "SELECT CurrentStock FROM inventory WHERE ProductID = %s",
-                       (product_id,)
-                    )              
+                    bill_no = st.text_input("Bill Number")
 
-                    stock_result = cursor.fetchone()
+                    customer_id = st.selectbox(
+                        "Customer",
+                        customer_ids
+                    )
 
-                    if stock_result is None:
-                        st.error("This product was not found in inventory.")
-                        st.stop()
+                    product_id = st.selectbox(
+                        "Product",
+                        product_ids
+                    )
 
-                    available_stock = stock_result[0]
+                    quantity = st.number_input(
+                        "Quantity",
+                        min_value=1,
+                        value=1
+                    )
 
-                    if quantity > available_stock:
-                        st.error(f"Only {available_stock} units are available in stock.")
-                        st.stop()
+                    sales_date = st.date_input(
+                        "Sales Date"
+                    )
 
+                    sales_executive = st.text_input(
+                        "Sales Executive"
+                    )
 
-                    available_stock = cursor.fetchone()[0]
+                    sale_payment_mode = st.selectbox(
+                        "Payment Mode",
+                        ["Cash", "UPI", "Card"]
+                    )
 
-                    if quantity > available_stock:
-                        st.error(
-                            f"Only {available_stock} units are available in stock."
-                        )
-                        st.stop()
+                    discount = st.number_input(
+                        "Discount Percentage",
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=0.0
+                    )
 
-                    if bill_no and sales_executive:
+                    submit_sale = st.form_submit_button(
+                        "Add Sale"
+                    )
 
-                        cursor.execute("""
-                            SELECT ProductName, Category,
-                                   CostPrice, SellingPrice
-                            FROM products
-                            WHERE ProductID = %s
-                        """, (product_id,))
+                    if submit_sale:
 
-                        product = cursor.fetchone()
+                        if (
+                            not bill_no.strip()
+                            or not sales_executive.strip()
+                        ):
 
-                        product_name = product[0]
-                        category = product[1]
-                        cost_price = float(product[2])
-                        selling_price = float(product[3])
+                            st.warning(
+                                "Bill Number and Sales Executive are required."
+                            )
 
-                        effective_price = selling_price * (1 - discount / 100)
-
-                        total_amount = effective_price * quantity
-                        total_cost = cost_price * quantity
-                        profit = total_amount - total_cost
-
-                        cursor.execute("""
-                            INSERT INTO sales_transactions
-                            (BillNo, Date, CustomerID, ProductID,
-                             Category, Qty, UnitPrice, DiscountPct,
-                             EffectivePrice, TotalAmount, TotalCost,
-                             Profit, SalesExecutive, PaymentMode)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s,
-                                    %s, %s, %s, %s, %s, %s, %s)
-                        """, (
-                            bill_no, sales_date, customer_id,
-                            product_id, category, quantity,
-                            selling_price, discount, effective_price,
-                            total_amount, total_cost, profit,
-                            sales_executive, payment_mode
-                        ))
-
-                        # Reduce inventory after sale
-                        cursor.execute("""
-                            UPDATE inventory
-                            SET CurrentStock = CurrentStock - %s
-                            WHERE ProductID = %s
-                        """, (quantity, product_id))
-
-                        # Check updated stock
-                        cursor.execute("""
-                            SELECT CurrentStock, ReorderLevel
-                            FROM inventory
-                            WHERE ProductID = %s
-                        """, (product_id,))
-
-                        updated_stock = cursor.fetchone()
-
-                        if updated_stock[0] == 0:
-                            status = "Out of Stock"
-                        elif updated_stock[0] <= updated_stock[1]:
-                            status = "Low Stock"
                         else:
-                            status = "In Stock"
 
-                        cursor.execute("""
-                            UPDATE inventory
-                            SET Status = %s
-                            WHERE ProductID = %s
-                        """, (status, product_id))
+                            try:
 
-                        connection.commit()
+                                # CHECK AVAILABLE STOCK
+                                cursor.execute("""
+                                    SELECT CurrentStock
+                                    FROM inventory
+                                    WHERE ProductID=%s
+                                """, (product_id,))
 
-                        st.success("Sales transaction added successfully!")
-                        st.rerun()
+                                stock_result = cursor.fetchone()
 
-                else:
-                        st.warning("Bill Number and Sales Executive are required.")
+                                if stock_result is None:
 
-                
-                            # PURCHASE MANAGEMENT MODULE
-        if page == "Purchase Management":
+                                    st.error(
+                                        "Product inventory record not found."
+                                    )
 
-            st.markdown("---")
+                                elif quantity > int(stock_result[0]):
+
+                                    st.error(
+                                        f"Only {stock_result[0]} units "
+                                        "are available."
+                                    )
+
+                                else:
+
+                                    # FETCH PRODUCT DETAILS
+                                    cursor.execute("""
+                                        SELECT
+                                            Category,
+                                            CostPrice,
+                                            SellingPrice
+                                        FROM products
+                                        WHERE ProductID=%s
+                                    """, (product_id,))
+
+                                    product = cursor.fetchone()
+
+                                    if product is None:
+
+                                        st.error(
+                                            "Product not found."
+                                        )
+
+                                    else:
+
+                                        category = product[0]
+
+                                        cost_price = float(
+                                            product[1] or 0
+                                        )
+
+                                        selling_price = float(
+                                            product[2] or 0
+                                        )
+
+                                        effective_price = (
+                                            selling_price *
+                                            (1 - discount / 100)
+                                        )
+
+                                        total_amount = (
+                                            effective_price * quantity
+                                        )
+
+                                        total_cost = (
+                                            cost_price * quantity
+                                        )
+
+                                        profit = (
+                                            total_amount - total_cost
+                                        )
+
+                                        # INSERT SALE
+                                        cursor.execute("""
+                                            INSERT INTO sales_transactions
+                                            (
+                                                BillNo,
+                                                Date,
+                                                CustomerID,
+                                                ProductID,
+                                                Category,
+                                                Qty,
+                                                UnitPrice,
+                                                DiscountPct,
+                                                EffectivePrice,
+                                                TotalAmount,
+                                                TotalCost,
+                                                Profit,
+                                                SalesExecutive,
+                                                PaymentMode
+                                            )
+                                            VALUES (
+                                                %s,%s,%s,%s,%s,%s,%s,
+                                                %s,%s,%s,%s,%s,%s,%s
+                                            )
+                                        """, (
+                                            bill_no.strip(),
+                                            sales_date,
+                                            customer_id,
+                                            product_id,
+                                            category,
+                                            quantity,
+                                            selling_price,
+                                            discount,
+                                            effective_price,
+                                            total_amount,
+                                            total_cost,
+                                            profit,
+                                            sales_executive.strip(),
+                                            sale_payment_mode
+                                        ))
+
+                                        # REDUCE INVENTORY
+                                        cursor.execute("""
+                                            UPDATE inventory
+                                            SET CurrentStock = CurrentStock - %s
+                                            WHERE ProductID=%s
+                                        """, (
+                                            quantity,
+                                            product_id
+                                        ))
+
+                                        # UPDATE STOCK STATUS
+                                        cursor.execute("""
+                                            SELECT
+                                                CurrentStock,
+                                                ReorderLevel
+                                            FROM inventory
+                                            WHERE ProductID=%s
+                                        """, (product_id,))
+
+                                        updated_stock = cursor.fetchone()
+
+                                        if updated_stock[0] == 0:
+
+                                            new_status = "Out of Stock"
+
+                                        elif updated_stock[0] <= updated_stock[1]:
+
+                                            new_status = "Low Stock"
+
+                                        else:
+
+                                            new_status = "In Stock"
+
+                                        cursor.execute("""
+                                            UPDATE inventory
+                                            SET Status=%s
+                                            WHERE ProductID=%s
+                                        """, (
+                                            new_status,
+                                            product_id
+                                        ))
+
+                                        safe_commit(
+                                            "Sales transaction added successfully!"
+                                        )
+
+                            except mysql.connector.Error as error:
+
+                                connection.rollback()
+
+                                st.error(
+                                    f"Unable to add sale: {error}"
+                                )
+
+                        # ==========================================
+        # PURCHASE MANAGEMENT
+        # ==========================================
+
+        elif page == "Purchase Management":
+
             st.header("🛒 Purchase Management")
 
-            # PURCHASE SUMMARY
+            st.write(
+                "Manage purchase orders and track purchases from suppliers."
+            )
+
             cursor.execute("""
                 SELECT
                     COUNT(*),
@@ -1175,286 +1677,370 @@ if password:
 
             purchase_summary = cursor.fetchone()
 
-            col1, col2 = st.columns(2)
+            p1, p2 = st.columns(2)
 
-            col1.metric("Total Purchase Orders", purchase_summary[0])
-            col2.metric("Total Purchase Amount", f"₹{purchase_summary[1]:,.2f}")
+            p1.metric(
+                "Total Purchase Orders",
+                purchase_summary[0]
+            )
+
+            p2.metric(
+                "Total Purchase Amount",
+                f"₹{float(purchase_summary[1]):,.0f}"
+            )
 
             st.markdown("---")
 
-            # PURCHASE RECORDS
             st.subheader("📋 Purchase Records")
 
-            cursor.execute("""
-                SELECT PONumber, Date, SupplierID, ProductID,
-                       Category, Qty, UnitCost, TotalAmount, Status
+            show_table("""
+                SELECT
+                    PONumber,
+                    Date,
+                    SupplierID,
+                    ProductID,
+                    Category,
+                    Qty,
+                    UnitCost,
+                    TotalAmount,
+                    Status
                 FROM purchases
                 ORDER BY Date DESC
             """)
 
-            records = cursor.fetchall()
-            columns = [description[0] for description in cursor.description]
-
-            st.dataframe(
-                [dict(zip(columns, row)) for row in records],
-                use_container_width=True
-            )
-
             st.markdown("---")
 
-            # ADD PURCHASE
             st.subheader("➕ Add New Purchase")
 
-            cursor.execute("SELECT SupplierID FROM suppliers")
-            supplier_ids = [row[0] for row in cursor.fetchall()]
-
-            cursor.execute("""
-                SELECT ProductID, ProductName, Category, CostPrice
-                FROM products
+            supplier_ids = get_values("""
+                SELECT SupplierID
+                FROM suppliers
+                ORDER BY SupplierID
             """)
-            products = cursor.fetchall()
 
-            with st.form("add_purchase_form"):
+            product_ids = get_values("""
+                SELECT ProductID
+                FROM products
+                ORDER BY ProductID
+            """)
 
-                po_number = st.text_input("Purchase Order Number")
+            if not supplier_ids or not product_ids:
 
-                supplier_id = st.selectbox("Supplier", supplier_ids)
-
-                product_options = {
-                    f"{p[0]} - {p[1]}": p for p in products
-                }
-
-                selected_product = st.selectbox(
-                    "Product",
-                    list(product_options.keys())
+                st.warning(
+                    "Please add suppliers and products first."
                 )
 
-                selected = product_options[selected_product]
+            else:
 
-                product_id = selected[0]
-                category = selected[2]
-                unit_cost = float(selected[3])
+                with st.form("add_purchase_form"):
 
-                purchase_qty = st.number_input(
-                    "Quantity",
-                    min_value=1,
-                    value=1
-                )
+                    po_number = st.text_input("Purchase Order Number")
 
-                purchase_date = st.date_input("Purchase Date")
+                    supplier_id = st.selectbox(
+                        "Supplier",
+                        supplier_ids
+                    )
 
-                purchase_status = st.selectbox(
-                    "Status",
-                    ["Pending", "Received", "Cancelled"]
-                )
+                    product_id = st.selectbox(
+                        "Product",
+                        product_ids
+                    )
 
-                total_amount = unit_cost * purchase_qty
+                    purchase_date = st.date_input(
+                        "Purchase Date"
+                    )
 
-                st.write(f"Total Purchase Amount: ₹{total_amount:,.2f}")
+                    purchase_qty = st.number_input(
+                        "Quantity",
+                        min_value=1,
+                        value=1
+                    )
 
-                submit_purchase = st.form_submit_button("Add Purchase")
+                    unit_cost = st.number_input(
+                        "Unit Cost",
+                        min_value=0.0,
+                        value=100.0
+                    )
 
-                if submit_purchase:
+                    purchase_status = st.selectbox(
+                        "Purchase Status",
+                        ["Pending", "Completed", "Cancelled"]
+                    )
 
-                    if po_number:
+                    submit_purchase = st.form_submit_button(
+                        "Add Purchase"
+                    )
 
-                        try:
-                            cursor.execute("""
-                                INSERT INTO purchases
-                                (PONumber, Date, SupplierID, ProductID,
-                                 Category, Qty, UnitCost, TotalAmount, Status)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            """, (
-                                po_number, purchase_date, supplier_id,
-                                product_id, category, purchase_qty,
-                                unit_cost, total_amount, purchase_status
-                            ))
+                    if submit_purchase:
 
-                                                        # Update inventory when purchase is received
-                            if purchase_status == "Received":
+                        if not po_number.strip():
+
+                            st.warning(
+                                "Please enter a Purchase Order Number."
+                            )
+
+                        else:
+
+                            try:
 
                                 cursor.execute("""
-                                    SELECT CurrentStock, ReorderLevel
-                                    FROM inventory
-                                    WHERE ProductID = %s
+                                    SELECT Category
+                                    FROM products
+                                    WHERE ProductID=%s
                                 """, (product_id,))
 
-                                inventory_result = cursor.fetchone()
+                                product_result = cursor.fetchone()
 
-                                if inventory_result is None:
-                                    raise Exception("Product not found in inventory.")
+                                if product_result is None:
 
-                                new_stock = inventory_result[0] + purchase_qty
-                                reorder_level = inventory_result[1]
+                                    st.error("Product not found.")
 
-                                if new_stock == 0:
-                                    new_status = "Out of Stock"
-                                elif new_stock <= reorder_level:
-                                    new_status = "Low Stock"
                                 else:
-                                    new_status = "In Stock"
 
-                                cursor.execute("""
-                                    UPDATE inventory
-                                    SET CurrentStock = %s,
-                                        Status = %s
-                                    WHERE ProductID = %s
-                                """, (new_stock, new_status, product_id))
+                                    category = product_result[0]
 
-                            connection.commit()
+                                    total_amount = (
+                                        purchase_qty * unit_cost
+                                    )
 
-                            st.success("Purchase order added successfully!")
-                            st.rerun()
+                                    cursor.execute("""
+                                        INSERT INTO purchases
+                                        (
+                                            PONumber,
+                                            Date,
+                                            SupplierID,
+                                            ProductID,
+                                            Category,
+                                            Qty,
+                                            UnitCost,
+                                            TotalAmount,
+                                            Status
+                                        )
+                                        VALUES (
+                                            %s,%s,%s,%s,%s,%s,%s,%s,%s
+                                        )
+                                    """, (
+                                        po_number.strip(),
+                                        purchase_date,
+                                        supplier_id,
+                                        product_id,
+                                        category,
+                                        purchase_qty,
+                                        unit_cost,
+                                        total_amount,
+                                        purchase_status
+                                    ))
 
-                        except mysql.connector.Error as error:
-                            connection.rollback()
-                            st.error(f"Unable to add purchase: {error}")
+                                    # Increase stock only for completed purchases
+                                    if purchase_status == "Completed":
 
-                    else:
-                        st.warning("Purchase Order Number is required.")
+                                        cursor.execute("""
+                                            UPDATE inventory
+                                            SET CurrentStock = CurrentStock + %s
+                                            WHERE ProductID=%s
+                                        """, (
+                                            purchase_qty,
+                                            product_id
+                                        ))
 
-                            # SUPPLIER MANAGEMENT MODULE
-        if page == "Supplier Management":
+                                        cursor.execute("""
+                                            SELECT
+                                                CurrentStock,
+                                                ReorderLevel
+                                            FROM inventory
+                                            WHERE ProductID=%s
+                                        """, (product_id,))
 
-            st.markdown("---")
-            st.header("🏭 Supplier Management")
-            st.caption("Manage your Bedi Cloth House suppliers.")
+                                        stock = cursor.fetchone()
 
-            # SUPPLIER SUMMARY
+                                        if stock:
+
+                                            if stock[0] == 0:
+                                                new_status = "Out of Stock"
+
+                                            elif stock[0] <= stock[1]:
+                                                new_status = "Low Stock"
+
+                                            else:
+                                                new_status = "In Stock"
+
+                                            cursor.execute("""
+                                                UPDATE inventory
+                                                SET Status=%s
+                                                WHERE ProductID=%s
+                                            """, (
+                                                new_status,
+                                                product_id
+                                            ))
+
+                                    safe_commit(
+                                        "Purchase record added successfully!"
+                                    )
+
+                            except mysql.connector.Error as error:
+
+                                connection.rollback()
+
+                                st.error(
+                                    f"Unable to add purchase: {error}"
+                                )
+
+        # ==========================================
+        # SUPPLIER MANAGEMENT
+        # ==========================================
+
+        elif page == "Supplier Management":
+
+            st.header("🚚 Supplier Management")
+
+            st.write(
+                "Maintain supplier information and contact details."
+            )
+
             cursor.execute("""
-                SELECT COUNT(*) FROM suppliers
+                SELECT COUNT(*)
+                FROM suppliers
             """)
 
             total_suppliers = cursor.fetchone()[0]
 
-            col1, col2 = st.columns(2)
-
-            col1.metric("Total Suppliers", total_suppliers)
-
-            cursor.execute("""
-                SELECT COUNT(DISTINCT City) FROM suppliers
-            """)
-
-            total_cities = cursor.fetchone()[0]
-
-            col2.metric("Supplier Cities", total_cities)
+            st.metric(
+                "Total Suppliers",
+                total_suppliers
+            )
 
             st.markdown("---")
 
-            # VIEW SUPPLIERS
-            st.subheader("📋 All Supplier Records")
+            st.subheader("📋 Supplier Records")
 
-            cursor.execute("""
-                SELECT SupplierID, SupplierName,
-                       CategorySupplied, City, ContactNo
+            show_table("""
+                SELECT
+                    SupplierID,
+                    SupplierName,
+                    CategorySupplied,
+                    City,
+                    ContactNo
                 FROM suppliers
                 ORDER BY SupplierName
             """)
-
-            supplier_records = cursor.fetchall()
-
-            columns = [description[0] for description in cursor.description]
-
-            st.dataframe(
-                [dict(zip(columns, row)) for row in supplier_records],
-                use_container_width=True
-            )
 
             st.markdown("---")
 
             # ADD SUPPLIER
             st.subheader("➕ Add New Supplier")
 
-            cursor.execute("""
-                SELECT Category FROM categories
-            """)
-
-            categories = [row[0] for row in cursor.fetchall()]
-
             with st.form("add_supplier_form"):
 
-                supplier_id = st.text_input("Supplier ID")
-
-                supplier_name = st.text_input("Supplier Name")
-
-                category_supplied = st.selectbox(
-                    "Category Supplied",
-                    categories
+                supplier_name = st.text_input(
+                    "Supplier Name"
                 )
 
-                city = st.text_input("City")
+                category_supplied = st.text_input(
+                    "Category Supplied"
+                )
 
-                contact_no = st.text_input("Contact Number")
+                supplier_city = st.text_input(
+                    "City"
+                )
 
-                add_supplier = st.form_submit_button("Add Supplier")
+                supplier_contact = st.text_input(
+                    "Contact Number"
+                )
 
-                if add_supplier:
+                submit_supplier = st.form_submit_button(
+                    "Add Supplier"
+                )
 
-                    if supplier_id and supplier_name and city:
+                if submit_supplier:
 
-                        try:
-                            cursor.execute("""
-                                INSERT INTO suppliers
-                                (SupplierID, SupplierName,
-                                 CategorySupplied, City, ContactNo)
-                                VALUES (%s, %s, %s, %s, %s)
-                            """, (
-                                supplier_id,
-                                supplier_name,
-                                category_supplied,
-                                city,
-                                contact_no
-                            ))
+                    if not supplier_name.strip():
 
-                            connection.commit()
-
-                            st.success("Supplier added successfully!")
-                            st.rerun()
-
-                        except mysql.connector.Error as error:
-                            connection.rollback()
-                            st.error(f"Unable to add supplier: {error}")
+                        st.warning(
+                            "Supplier name is required."
+                        )
 
                     else:
-                        st.warning("Please enter Supplier ID, Supplier Name and City.")
+
+                        try:
+
+                            cursor.execute("""
+                                SELECT COALESCE(MAX(SupplierID), 0) + 1
+                                FROM suppliers
+                            """)
+
+                            new_supplier_id = cursor.fetchone()[0]
+
+                            cursor.execute("""
+                                INSERT INTO suppliers
+                                (
+                                    SupplierID,
+                                    SupplierName,
+                                    CategorySupplied,
+                                    City,
+                                    ContactNo
+                                )
+                                VALUES (%s,%s,%s,%s,%s)
+                            """, (
+                                new_supplier_id,
+                                supplier_name.strip(),
+                                category_supplied,
+                                supplier_city,
+                                supplier_contact
+                            ))
+
+                            safe_commit(
+                                "Supplier added successfully!"
+                            )
+
+                        except mysql.connector.Error as error:
+
+                            connection.rollback()
+
+                            st.error(
+                                f"Unable to add supplier: {error}"
+                            )
 
             st.markdown("---")
 
             # UPDATE SUPPLIER
-            st.subheader("✏️ Update Supplier Details")
+            st.subheader("✏️ Update Supplier")
 
-            cursor.execute("""
-                SELECT SupplierID FROM suppliers
+            supplier_ids = get_values("""
+                SELECT SupplierID
+                FROM suppliers
+                ORDER BY SupplierID
             """)
 
-            supplier_list = [row[0] for row in cursor.fetchall()]
-
-            if supplier_list:
+            if supplier_ids:
 
                 selected_supplier = st.selectbox(
-                    "Select Supplier ID to Update",
-                    supplier_list
+                    "Select Supplier ID",
+                    supplier_ids,
+                    key="update_supplier_id"
                 )
 
                 cursor.execute("""
-                    SELECT SupplierName, CategorySupplied, City, ContactNo
+                    SELECT
+                        SupplierName,
+                        CategorySupplied,
+                        City,
+                        ContactNo
                     FROM suppliers
-                    WHERE SupplierID = %s
+                    WHERE SupplierID=%s
                 """, (selected_supplier,))
 
                 supplier_details = cursor.fetchone()
 
                 with st.form("update_supplier_form"):
 
-                    updated_name = st.text_input(
+                    updated_supplier_name = st.text_input(
                         "Supplier Name",
                         value=supplier_details[0] or ""
                     )
 
-                    updated_category = st.selectbox(
+                    updated_category = st.text_input(
                         "Category Supplied",
-                        categories,
-                        index=categories.index(supplier_details[1])
+                        value=supplier_details[1] or ""
                     )
 
                     updated_city = st.text_input(
@@ -1474,297 +2060,117 @@ if password:
                     if update_supplier:
 
                         try:
+
                             cursor.execute("""
                                 UPDATE suppliers
-                                SET SupplierName = %s,
-                                    CategorySupplied = %s,
-                                    City = %s,
-                                    ContactNo = %s
-                                WHERE SupplierID = %s
+                                SET
+                                    SupplierName=%s,
+                                    CategorySupplied=%s,
+                                    City=%s,
+                                    ContactNo=%s
+                                WHERE SupplierID=%s
                             """, (
-                                updated_name,
+                                updated_supplier_name,
                                 updated_category,
                                 updated_city,
                                 updated_contact,
                                 selected_supplier
                             ))
 
-                            connection.commit()
-
-                            st.success("Supplier updated successfully!")
-                            st.rerun()
+                            safe_commit(
+                                "Supplier details updated successfully!"
+                            )
 
                         except mysql.connector.Error as error:
+
                             connection.rollback()
-                            st.error(f"Unable to update supplier: {error}")
 
-            st.markdown("---")
+                            st.error(
+                                f"Unable to update supplier: {error}"
+                            )
 
-            # DELETE SUPPLIER
-            st.subheader("🗑️ Delete Supplier")
+        # ==========================================
+        # SALES TARGETS MANAGEMENT
+        # ==========================================
 
-            if supplier_list:
+        elif page == "Sales Targets Management":
 
-                delete_supplier_id = st.selectbox(
-                    "Select Supplier ID to Delete",
-                    supplier_list,
-                    key="delete_supplier"
-                )
-
-                if st.button("Delete Supplier"):
-
-                    try:
-                        cursor.execute("""
-                            DELETE FROM suppliers
-                            WHERE SupplierID = %s
-                        """, (delete_supplier_id,))
-
-                        connection.commit()
-
-                        st.success("Supplier deleted successfully!")
-                        st.rerun()
-
-                    except mysql.connector.Error as error:
-                        connection.rollback()
-                        st.error(
-                            "This supplier cannot be deleted because "
-                            "it is linked to existing inventory or purchase records."
-                        )
-                        # SALES TARGETS MANAGEMENT MODULE
-        if page == "Sales Targets Management":
-
-            st.markdown("---")
             st.header("🎯 Sales Targets Management")
 
-            # SUMMARY
-            cursor.execute("""
-                SELECT
-                    COUNT(*),
-                    COALESCE(SUM(SalesTarget), 0),
-                    COALESCE(SUM(AchievedSales), 0)
-                FROM sales_targets
-            """)
-
-            target_summary = cursor.fetchone()
-
-            col1, col2, col3 = st.columns(3)
-
-            col1.metric("Total Target Records", target_summary[0])
-            col2.metric("Total Sales Target", f"₹{target_summary[1]:,.2f}")
-            col3.metric("Total Achieved Sales", f"₹{target_summary[2]:,.2f}")
-
-            st.markdown("---")
-
-            # VIEW RECORDS
-            st.subheader("📋 Sales Target Records")
-
-            cursor.execute("""
-                SELECT SalesExecutive, Month, SalesTarget,
-                       AchievedSales, AchievementPct
-                FROM sales_targets
-                ORDER BY Month DESC, SalesExecutive
-            """)
-
-            target_records = cursor.fetchall()
-            columns = [description[0] for description in cursor.description]
-
-            st.dataframe(
-                [dict(zip(columns, row)) for row in target_records],
-                use_container_width=True
+            st.write(
+                "Monitor sales executive targets and their performance."
             )
 
             st.markdown("---")
 
-            # ADD TARGET
-            st.subheader("➕ Add New Sales Target")
+            st.subheader("📋 Sales Target Records")
 
-            cursor.execute("""
-                SELECT DISTINCT SalesExecutive
-                FROM sales_transactions
-                ORDER BY SalesExecutive
-            """)
-
-            executives = [row[0] for row in cursor.fetchall()]
-
-            with st.form("add_target_form"):
-
-                executive = st.selectbox(
-                    "Sales Executive",
-                    executives
-                )
-
-                month = st.text_input(
-                    "Month",
-                    placeholder="Example: Jan-2027"
-                )
-
-                target_amount = st.number_input(
-                    "Sales Target (₹)",
-                    min_value=1.0,
-                    value=10000.0
-                )
-
-                achieved_amount = st.number_input(
-                    "Achieved Sales (₹)",
-                    min_value=0.0,
-                    value=0.0
-                )
-
-                add_target = st.form_submit_button("Add Sales Target")
-
-                if add_target:
-
-                    if month.strip():
-
-                        achievement = (
-                            achieved_amount / target_amount
-                        ) * 100
-
-                        try:
-                            cursor.execute("""
-                                INSERT INTO sales_targets
-                                (SalesExecutive, Month, SalesTarget,
-                                 AchievedSales, AchievementPct)
-                                VALUES (%s, %s, %s, %s, %s)
-                            """, (
-                                executive,
-                                month.strip(),
-                                target_amount,
-                                achieved_amount,
-                                achievement
-                            ))
-
-                            connection.commit()
-
-                            st.success("Sales target added successfully!")
-                            st.rerun()
-
-                        except mysql.connector.Error as error:
-                            connection.rollback()
-                            st.error(f"Unable to add target: {error}")
-
-                    else:
-                        st.warning("Please enter the month.")
-
-            st.markdown("---")
-
-            # UPDATE TARGET
-            st.subheader("✏️ Update Sales Target")
-
-            cursor.execute("""
-                SELECT SalesExecutive, Month
+            show_table("""
+                SELECT *
                 FROM sales_targets
-                ORDER BY Month DESC
             """)
-
-            target_options = cursor.fetchall()
-
-            if target_options:
-
-                selected_target = st.selectbox(
-                    "Select Target Record",
-                    target_options,
-                    format_func=lambda x: f"{x[0]} - {x[1]}"
-                )
-
-                cursor.execute("""
-                    SELECT SalesTarget, AchievedSales
-                    FROM sales_targets
-                    WHERE SalesExecutive = %s AND Month = %s
-                """, selected_target)
-
-                existing_target = cursor.fetchone()
-
-                with st.form("update_target_form"):
-
-                    updated_target = st.number_input(
-                        "Updated Sales Target (₹)",
-                        min_value=1.0,
-                        value=float(existing_target[0])
-                    )
-
-                    updated_achieved = st.number_input(
-                        "Updated Achieved Sales (₹)",
-                        min_value=0.0,
-                        value=float(existing_target[1])
-                    )
-
-                    update_target = st.form_submit_button(
-                        "Update Sales Target"
-                    )
-
-                    if update_target:
-
-                        achievement = (
-                            updated_achieved / updated_target
-                        ) * 100
-
-                        try:
-                            cursor.execute("""
-                                UPDATE sales_targets
-                                SET SalesTarget = %s,
-                                    AchievedSales = %s,
-                                    AchievementPct = %s
-                                WHERE SalesExecutive = %s
-                                AND Month = %s
-                            """, (
-                                updated_target,
-                                updated_achieved,
-                                achievement,
-                                selected_target[0],
-                                selected_target[1]
-                            ))
-
-                            connection.commit()
-
-                            st.success("Sales target updated successfully!")
-                            st.rerun()
-
-                        except mysql.connector.Error as error:
-                            connection.rollback()
-                            st.error(f"Unable to update target: {error}")
 
             st.markdown("---")
 
-            # DELETE TARGET
-            st.subheader("🗑️ Delete Sales Target")
+            st.subheader("📊 Target Performance Summary")
 
-            if target_options:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM sales_targets
+            """)
 
-                delete_target = st.selectbox(
-                    "Select Target to Delete",
-                    target_options,
-                    format_func=lambda x: f"{x[0]} - {x[1]}",
-                    key="delete_target"
-                )
+            total_targets = cursor.fetchone()[0]
 
-                if st.button("Delete Sales Target"):
+            st.metric(
+                "Total Target Records",
+                total_targets
+            )
 
-                    try:
-                        cursor.execute("""
-                            DELETE FROM sales_targets
-                            WHERE SalesExecutive = %s AND Month = %s
-                        """, delete_target)
+            cursor.execute("""
+                SHOW COLUMNS FROM sales_targets
+            """)
 
-                        connection.commit()
+            target_columns = [
+                row[0] for row in cursor.fetchall()
+            ]
 
-                        st.success("Sales target deleted successfully!")
-                        st.rerun()
+            st.caption(
+                "Target table columns: " +
+                ", ".join(target_columns)
+            )
 
-                    except mysql.connector.Error as error:
-                        connection.rollback()
-                        st.error(f"Unable to delete target: {error}")
+        # ==========================================
+        # APPLICATION FOOTER
+        # ==========================================
+        st.markdown("---")
 
-        cursor.close()
-        connection.close()
+        st.markdown(
+            """
+<div style="
+    background-color: #800020;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+">
+    <h2 style="color: #FFD700;">BEDI CLOTH HOUSE</h2>
+    <h4 style="color: white;">Tradition Meets Trend</h4>
+    <p style="color: white;">Business Management System</p>
+    <p style="color: white;">Developed using Python, Streamlit and MySQL</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
 
     except mysql.connector.Error as error:
-        st.sidebar.error("Database Connection Failed")
-        st.error(f"Error: {error}")
+
+        st.error(f"Database Error: {error}")
+
+    except Exception as error:
+
+        st.error(f"Application Error: {error}")
 
 else:
-    st.info("Enter your MySQL password in the left sidebar to connect.")
 
-st.markdown("---")
-
-st.caption("© 2026 Bedi Cloth House | Management System")
+    st.warning(
+        "Please enter your database password in Streamlit Secrets."
+    )
